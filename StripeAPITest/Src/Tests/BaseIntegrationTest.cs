@@ -45,4 +45,46 @@ public abstract partial class BaseIntegrationTest // 1. Make the class 'partial'
         Message = "--- Logger Initialized for Test Fixture ---"
     )]
     private static partial void LogFixtureInitialized(ILogger logger);
+
+    // Predefined logger message delegates for improved performance
+    protected static readonly Action<
+        ILogger,
+        string,
+        Exception?
+    > LogCleanedUpCustomer = LoggerMessage.Define<string>(
+        LogLevel.Information,
+        new EventId(1001, nameof(LogCleanedUpCustomer)),
+        "🧹 Cleaned up customer: {CustomerId}"
+    );
+
+    protected static readonly Action<
+        ILogger,
+        string,
+        Exception?
+    > LogCustomerCreated = LoggerMessage.Define<string>(
+        LogLevel.Information,
+        new EventId(1002, nameof(LogCustomerCreated)),
+        "✔️ Customer created: {CustomerId}"
+    );
+
+    protected static readonly Action<
+        ILogger,
+        string,
+        string,
+        Exception?
+    > LogFailedToDeleteCustomer = LoggerMessage.Define<string, string>(
+        LogLevel.Warning,
+        new EventId(1003, nameof(LogFailedToDeleteCustomer)),
+        "⚠️ Failed to delete customer {CustomerId}: {Error}"
+    );
+
+    protected static readonly Action<
+        ILogger,
+        string,
+        Exception?
+    > LogCustomerDeleted = LoggerMessage.Define<string>(
+        LogLevel.Information,
+        new EventId(1004, nameof(LogCustomerDeleted)),
+        "✔️ Deleted customer: {CustomerId}"
+    );
 }

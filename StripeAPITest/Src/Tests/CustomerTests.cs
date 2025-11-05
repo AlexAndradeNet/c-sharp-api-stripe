@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Allure.Net.Commons;
 using Allure.NUnit.Attributes;
-using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
 using NUnit.Framework;
 using StripeAPITest.Main.Clients;
 using StripeAPITest.Main.Models;
@@ -59,49 +59,9 @@ public class CustomerTests : BaseIntegrationTest
 
             _createdCustomerIds.Clear();
         }
+    );
+        }
     }
-
-    // Predefined logger message delegates for improved performance
-    private static readonly Action<
-        ILogger,
-        string,
-        Exception?
-    > LogCleanedUpCustomer = LoggerMessage.Define<string>(
-        LogLevel.Information,
-        new EventId(1001, nameof(LogCleanedUpCustomer)),
-        "🧹 Cleaned up customer: {CustomerId}"
-    );
-
-    private static readonly Action<
-        ILogger,
-        string,
-        Exception?
-    > LogCustomerCreated = LoggerMessage.Define<string>(
-        LogLevel.Information,
-        new EventId(1002, nameof(LogCustomerCreated)),
-        "✔️ Customer created: {CustomerId}"
-    );
-
-    private static readonly Action<
-        ILogger,
-        string,
-        string,
-        Exception?
-    > LogFailedToDeleteCustomer = LoggerMessage.Define<string, string>(
-        LogLevel.Warning,
-        new EventId(1003, nameof(LogFailedToDeleteCustomer)),
-        "⚠️ Failed to delete customer {CustomerId}: {Error}"
-    );
-
-    private static readonly Action<
-        ILogger,
-        string,
-        Exception?
-    > LogCustomerDeleted = LoggerMessage.Define<string>(
-        LogLevel.Information,
-        new EventId(1004, nameof(LogCustomerDeleted)),
-        "✔️ Deleted customer: {CustomerId}"
-    );
 
     private StripeApiClient _stripeClient = null!;
 
