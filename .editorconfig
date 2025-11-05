@@ -1,0 +1,39 @@
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+tab_width = 4
+insert_final_newline = true
+max_line_length = 80
+ij_continuation_indent_size = 8
+ij_formatter_off_tag = @formatter:off
+ij_formatter_on_tag = @formatter:on
+ij_formatter_tags_enabled = false
+ij_smart_tabs = false
+ij_wrap_on_typing = false
+
+[*.feature]
+indent_size = 2
+tab_width = 2
+ij_gherkin_keep_indents_on_empty_lines = false
+trim_trailing_whitespace = true
+
+[{*.yaml,*.yml}]
+indent_size = 2
+tab_width = 2
+ij_yaml_keep_indents_on_empty_lines = false
+ij_yaml_keep_line_breaks = true
+
+# C# files
+[*.cs]
+# Set default severities for rule categories
+dotnet_analyzer_diagnostic.category-Security.severity = warning
+dotnet_analyzer_diagnostic.category-Usage.severity = warning
+dotnet_analyzer_diagnostic.category-Performance.severity = warning
+dotnet_analyzer_diagnostic.category-Design.severity = warning
+# Make StyleCop's 'using' rule a build-breaking error
+dotnet_diagnostic.SA1200.severity = error
+# I don't care about XML documentation, so I'll suppress it
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1601.severity = none

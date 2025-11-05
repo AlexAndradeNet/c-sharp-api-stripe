@@ -1,0 +1,11 @@
+{
+    "search.useIgnoreFiles": true,
+    "search.useGlobalIgnoreFiles": true,
+    "[csharp]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "[xml]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj, **/*Test.csproj"
+}

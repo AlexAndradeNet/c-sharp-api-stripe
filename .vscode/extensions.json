@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "jmrog.vscode-nuget-package-manager",
+        "fernandoescolar.vscode-solution-explorer",
+        "sonarsource.sonarlint-vscode",
+        "editorconfig.editorconfig",
+        "csharpier.csharpier-vscode"
+    ]
+}
