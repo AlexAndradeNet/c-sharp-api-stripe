@@ -37,29 +37,29 @@ public class CustomerTests : BaseIntegrationTest
         // Clean up all created customers after each test
         if (_createdCustomerIds.Count > 0)
         {
-            AllureApi.Step(
-                $"Cleaning up {_createdCustomerIds.Count} customer(s)"
+            await AllureApi.Step(
+                $"Cleaning up {_createdCustomerIds.Count} customer(s)",
+                async () =>
+                {
+                    foreach (var customerId in _createdCustomerIds)
+                        try
+                        {
+                            await _stripeClient.DeleteCustomer(customerId);
+                            LogCleanedUpCustomer(Log, customerId, null);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogFailedToDeleteCustomer(
+                                Log,
+                                customerId,
+                                ex.Message,
+                                null
+                            );
+                        }
+
+                    _createdCustomerIds.Clear();
+                }
             );
-
-            foreach (var customerId in _createdCustomerIds)
-                try
-                {
-                    await _stripeClient.DeleteCustomer(customerId);
-                    LogCleanedUpCustomer(Log, customerId, null);
-                }
-                catch (Exception ex)
-                {
-                    LogFailedToDeleteCustomer(
-                        Log,
-                        customerId,
-                        ex.Message,
-                        null
-                    );
-                }
-
-            _createdCustomerIds.Clear();
-        }
-    );
         }
     }
 
@@ -76,35 +76,50 @@ public class CustomerTests : BaseIntegrationTest
             $"Generated customer: {customer.Name} - {customer.Email}"
         );
 
-        AllureApi.Step("Creating customer via Stripe API");
-        var response = await _stripeClient.CreateCustomer(customer);
+        CustomerResponse responseBody = null!;
 
-        Assert.That(response.Ok, Is.True, "Create customer should succeed");
+        await AllureApi.Step(
+            "Creating customer via Stripe API",
+            async () =>
+            {
+                var response = await _stripeClient.CreateCustomer(customer);
 
-        var responseBody =
-            await StripeApiClient.DeserializeResponse<CustomerResponse>(
-                response
-            );
+                Assert.That(
+                    response.Ok,
+                    Is.True,
+                    "Create customer should succeed"
+                );
 
-        Assert.That(
-            response.Status,
-            Is.EqualTo(200),
-            "Expected status code 200"
+                responseBody =
+                    await StripeApiClient.DeserializeResponse<CustomerResponse>(
+                        response
+                    );
+
+                Assert.That(
+                    response.Status,
+                    Is.EqualTo(200),
+                    "Expected status code 200"
+                );
+            }
         );
 
-        AllureApi.Step($"Response received for customer ID: {responseBody.Id}");
+        AllureApi.Step(
+            $"Response received for customer ID: {responseBody.Id}",
+            () =>
+            {
+                // Ensure we have an ID before tracking the customer for cleanup
+                Assert.That(
+                    responseBody.Id,
+                    Is.Not.Null.And.Not.Empty,
+                    "Expected customer ID in response"
+                );
 
-        // Ensure we have an ID before tracking the customer for cleanup
-        Assert.That(
-            responseBody.Id,
-            Is.Not.Null.And.Not.Empty,
-            "Expected customer ID in response"
+                // Track the customer ID for cleanup
+                _createdCustomerIds.Add(responseBody.Id!);
+
+                LogCustomerCreated(Log, responseBody.Id!, null);
+            }
         );
-
-        // Track the customer ID for cleanup
-        _createdCustomerIds.Add(responseBody.Id!);
-
-        LogCustomerCreated(Log, responseBody.Id!, null);
 
         return responseBody;
     }
@@ -132,30 +147,51 @@ public class CustomerTests : BaseIntegrationTest
         // Arrange
         var createResponse = await CreateAndTrackCustomer();
 
-        // Act - Get
-        AllureApi.Step("Step 2: Retrieve customer");
-        var getResponse = await _stripeClient.GetCustomer(createResponse.Id!);
-        Assert.That(getResponse.Ok, Is.True, "Get customer should succeed");
+        CustomerResponse retrievedCustomer = null!;
 
-        var retrievedCustomer =
-            await StripeApiClient.DeserializeResponse<CustomerResponse>(
-                getResponse
-            );
+        // Act - Get
+        await AllureApi.Step(
+            "Step 2: Retrieve customer",
+            async () =>
+            {
+                var getResponse = await _stripeClient.GetCustomer(
+                    createResponse.Id!
+                );
+                Assert.That(
+                    getResponse.Ok,
+                    Is.True,
+                    "Get customer should succeed"
+                );
+
+                retrievedCustomer =
+                    await StripeApiClient.DeserializeResponse<CustomerResponse>(
+                        getResponse
+                    );
+            }
+        );
 
         // Assert
-        AllureApi.Step("Step 3: Verify data consistency");
-        Assert.Multiple(() =>
-        {
-            Assert.That(retrievedCustomer.Id, Is.EqualTo(createResponse.Id));
-            Assert.That(
-                retrievedCustomer.Name,
-                Is.EqualTo(createResponse.Name)
-            );
-            Assert.That(
-                retrievedCustomer.Email,
-                Is.EqualTo(createResponse.Email)
-            );
-        });
+        AllureApi.Step(
+            "Step 3: Verify data consistency",
+            () =>
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        retrievedCustomer.Id,
+                        Is.EqualTo(createResponse.Id)
+                    );
+                    Assert.That(
+                        retrievedCustomer.Name,
+                        Is.EqualTo(createResponse.Name)
+                    );
+                    Assert.That(
+                        retrievedCustomer.Email,
+                        Is.EqualTo(createResponse.Email)
+                    );
+                });
+            }
+        );
     }
 
     [Test]
@@ -170,26 +206,52 @@ public class CustomerTests : BaseIntegrationTest
         // Arrange
         var createResponse = await CreateAndTrackCustomer();
 
-        // Act
         var updatedCustomer = TestDataGenerator.RandomCustomerWithPrefix(
             "Updated"
         );
-        var updateResponse = await _stripeClient.UpdateCustomer(
-            createResponse.Id!,
-            updatedCustomer
+        AllureApi.Step(
+            $"Step 2: Generated customer: {updatedCustomer.Name} - {updatedCustomer.Email}"
         );
 
-        // Assert
-        Assert.That(updateResponse.Ok, Is.True, "Update should succeed");
-        var updated =
-            await StripeApiClient.DeserializeResponse<CustomerResponse>(
-                updateResponse
-            );
-        Assert.Multiple(() =>
-        {
-            Assert.That(updated.Name, Is.EqualTo(updatedCustomer.Name));
-            Assert.That(updated.Email, Is.EqualTo(updatedCustomer.Email));
-        });
+        // Act
+        CustomerResponse updated = null!;
+        await AllureApi.Step(
+            "Step 3: Update customer",
+            async () =>
+            {
+                var updateResponse = await _stripeClient.UpdateCustomer(
+                    createResponse.Id!,
+                    updatedCustomer
+                );
+
+                // Assert
+                Assert.That(
+                    updateResponse.Ok,
+                    Is.True,
+                    "Update should succeed"
+                );
+
+                updated =
+                    await StripeApiClient.DeserializeResponse<CustomerResponse>(
+                        updateResponse
+                    );
+            }
+        );
+
+        AllureApi.Step(
+            "Step 4: Verify data consistency",
+            () =>
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(updated.Name, Is.EqualTo(updatedCustomer.Name));
+                    Assert.That(
+                        updated.Email,
+                        Is.EqualTo(updatedCustomer.Email)
+                    );
+                });
+            }
+        );
     }
 
     [Test]
@@ -205,16 +267,33 @@ public class CustomerTests : BaseIntegrationTest
         var createResponse = await CreateAndTrackCustomer();
 
         // Act
-        var deleteResponse = await _stripeClient.DeleteCustomer(
-            createResponse.Id!
+        IAPIResponse deleteResponse = null!;
+        await AllureApi.Step(
+            $"Step 2: Delete customer: {createResponse.Name} - {createResponse.Email}",
+            async () =>
+            {
+                deleteResponse = await _stripeClient.DeleteCustomer(
+                    createResponse.Id!
+                );
+            }
         );
 
         // Assert
-        Assert.That(deleteResponse.Ok, Is.True, "Delete should succeed");
-        LogCustomerDeleted(Log, createResponse.Id!, null);
+        AllureApi.Step(
+            $"Step 3: Verify deletion: {createResponse.Name} - {createResponse.Email}",
+            () =>
+            {
+                Assert.That(
+                    deleteResponse.Ok,
+                    Is.True,
+                    "Delete should succeed"
+                );
+                LogCustomerDeleted(Log, createResponse.Id!, null);
 
-        // Prevent the unnecessary AfterEach cleaning
-        _createdCustomerIds.Remove(createResponse.Id!);
+                // Prevent the unnecessary AfterEach cleaning
+                _createdCustomerIds.Remove(createResponse.Id!);
+            }
+        );
     }
 
     [Test]
@@ -225,40 +304,55 @@ public class CustomerTests : BaseIntegrationTest
     public async Task ListCustomersShouldReturnCustomers()
     {
         // Act
-        AllureApi.Step("Fetching list of customers (limit: 5)");
-        var responseUserList = await _stripeClient.ListCustomers(5);
+        CustomerListResponse responseUserListBody = null!;
+        await AllureApi.Step(
+            "Step 1: Fetching list of customers (limit: 5)",
+            async () =>
+            {
+                var responseUserList = await _stripeClient.ListCustomers(5);
 
-        // Assert
-        Assert.That(
-            responseUserList.Ok,
-            Is.True,
-            "List customers should succeed"
+                // Assert
+                Assert.That(
+                    responseUserList.Ok,
+                    Is.True,
+                    "List customers should succeed"
+                );
+
+                responseUserListBody =
+                    await StripeApiClient.DeserializeResponse<CustomerListResponse>(
+                        responseUserList
+                    );
+            }
         );
 
-        var responseUserListBody =
-            await StripeApiClient.DeserializeResponse<CustomerListResponse>(
-                responseUserList
-            );
+        AllureApi.Step(
+            "Step 2: Verify list of customers (limit: 5)",
+            () =>
+            {
+                Assert.That(
+                    responseUserListBody.Data,
+                    Is.Not.Null,
+                    "Customer list data should not be null"
+                );
+                Assert.That(
+                    responseUserListBody.Data,
+                    Is.Not.Empty,
+                    "Customer list should not be empty"
+                );
+                Assert.That(
+                    responseUserListBody.Data,
+                    Has.Count.EqualTo(5),
+                    "Customer list count should be less than or equal to 5"
+                );
 
-        Assert.That(
-            responseUserListBody.Data,
-            Is.Not.Null,
-            "Customer list data should not be null"
+                AllureApi.AddAttachment(
+                    "Customer List",
+                    "application/json",
+                    Encoding.UTF8.GetBytes(
+                        JsonSerializer.Serialize(responseUserListBody)
+                    )
+                );
+            }
         );
-        Assert.That(
-            responseUserListBody.Data,
-            Is.Not.Empty,
-            "Customer list should not be empty"
-        );
-
-        AllureApi.AddAttachment(
-            "Customer List",
-            "application/json",
-            Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(responseUserListBody)
-            )
-        );
-
-        AllureApi.Step("✓ Successfully retrieved customer list");
     }
 }
