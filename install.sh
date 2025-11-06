@@ -5,11 +5,10 @@ npm install
 dotnet tool install csharpier
 dotnet tool install dotnet-sonarscanner
 
-dotnet tool install Husky
-dotnet husky install
-
 chmod +x .husky/pre-commit
 chmod +x .husky/pre-push
+dotnet tool install Husky
+dotnet husky install
 
 cd StripeAPITest
 dotnet restore
