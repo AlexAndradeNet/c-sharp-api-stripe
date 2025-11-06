@@ -1,6 +1,8 @@
 #!/bin/bash # Environment
 set -euo pipefail # Error handling and Strict mode
 
+echo "Running pre-push checks..."
+
 sh ./pre-commit.sh
 if [ $? -ne 0 ]; then
     echo "There are uncommitted changes after pre-commit hook. Aborting push."
