@@ -1,0 +1,17 @@
+#!/bin/bash # Environment
+set -euo pipefail # Error handling and Strict mode
+
+sh ./pre-commit.sh
+if [ $? -ne 0 ]; then
+    echo "There are uncommitted changes after pre-commit hook. Aborting push."
+    exit 1
+fi
+
+dotnet test
+if [ $? -ne 0 ]; then
+    echo "Unit tests failed. Aborting push."
+    exit 1
+fi
+
+echo "All pre-push checks passed successfully."
+exit 0

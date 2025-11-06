@@ -1,0 +1,44 @@
+#!/bin/bash # Environment
+set -euo pipefail # Error handling and Strict mode
+
+function checkIfError() {
+    if [ "$1" -ne 0 ] || [ "$2" -ne 0 ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+dotnet clean # Clean the stage before all
+
+echo "Running pre-commit checks..."
+
+# Run gherkin-lint
+dotnet csharpier format .
+csharpierStatus=$? # Save the exit status of the previous command
+
+checkIfError $csharpierStatus 0 # Accumulate way to check if the previous command was successful
+csharpierStatus=$? # Save the exit of the function
+
+
+# Run linters (e.g., Spotless, ESLint, etc.)
+dotnet build
+checkIfError $csharpierStatus $? # Accumulate way to check if the previous command was successful
+buildStatus=$? # Save the exit of the function
+
+# Run unit tests
+#dotnet test
+
+echo ""
+
+git add .
+
+if [[ $buildStatus -ne 0 ]]; then
+    echo "RESULT: Pre-commit checks failed. Please fix the issues before committing."
+    echo ""
+    exit 1
+fi
+
+echo "RESULT: Pre-commit checks passed successfully."
+echo ""
+exit 0
