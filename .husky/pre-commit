@@ -13,6 +13,9 @@ dotnet clean # Clean the stage before all
 
 echo "Running pre-commit checks..."
 
+# Get the list of staged files
+staggedFiles=$(git diff --cached --name-only --diff-filter=ACM || true)
+
 # Run gherkin-lint
 dotnet csharpier format .
 csharpierStatus=$? # Save the exit status of the previous command
@@ -31,7 +34,10 @@ buildStatus=$? # Save the exit of the function
 
 echo ""
 
-git add .
+# Re-add any modified files to the staging area
+git add $staggedFiles
+
+# git add .
 
 if [[ $buildStatus -ne 0 ]]; then
     echo "RESULT: Pre-commit checks failed. Please fix the issues before committing."
