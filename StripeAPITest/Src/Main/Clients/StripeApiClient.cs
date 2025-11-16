@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Playwright;
 using StripeAPITest.Main.Config;
 using StripeAPITest.Main.Models;
+using StripeAPITest.Main.Utils;
 
 namespace StripeAPITest.Main.Clients;
 
@@ -49,12 +50,22 @@ public class StripeApiClient()
             }
         );
 
+        SchemaValidator.ValidateFromFiles(
+            "Customer/GetCustomerSchema.json",
+            await response.TextAsync()
+        );
+
         return response;
     }
 
     public async Task<IAPIResponse> GetCustomer(string customerId)
     {
         var response = await GetAsync($"/v1/customers/{customerId}");
+
+        SchemaValidator.ValidateFromFiles(
+            "Customer/GetCustomerSchema.json",
+            await response.TextAsync()
+        );
 
         return response;
     }
@@ -84,6 +95,11 @@ public class StripeApiClient()
             }
         );
 
+        SchemaValidator.ValidateFromFiles(
+            "Customer/GetCustomerSchema.json",
+            await response.TextAsync()
+        );
+
         return response;
     }
 
@@ -91,12 +107,22 @@ public class StripeApiClient()
     {
         var response = await DeleteAsync($"/v1/customers/{customerId}");
 
+        SchemaValidator.ValidateFromFiles(
+            "Customer/DeleteCustomerSchema.json",
+            await response.TextAsync()
+        );
+
         return response;
     }
 
     public async Task<IAPIResponse> ListCustomers(int limit = 10)
     {
         var response = await GetAsync($"/v1/customers?limit={limit}");
+
+        SchemaValidator.ValidateFromFiles(
+            "Customer/GetListOfCustomersSchema.json",
+            await response.TextAsync()
+        );
 
         return response;
     }

@@ -1,0 +1,117 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "object": {
+            "type": "string"
+        },
+        "address": {
+            "type": "null"
+        },
+        "balance": {
+            "type": "integer"
+        },
+        "created": {
+            "type": "integer"
+        },
+        "currency": {
+            "type": "null"
+        },
+        "default_source": {
+            "type": "null"
+        },
+        "delinquent": {
+            "type": "boolean"
+        },
+        "description": {
+            "type": "null"
+        },
+        "discount": {
+            "type": "null"
+        },
+        "email": {
+            "type": "string"
+        },
+        "invoice_prefix": {
+            "type": "string"
+        },
+        "invoice_settings": {
+            "type": "object",
+            "properties": {
+                "custom_fields": {
+                    "type": "null"
+                },
+                "default_payment_method": {
+                    "type": "null"
+                },
+                "footer": {
+                    "type": "null"
+                },
+                "rendering_options": {
+                    "type": "null"
+                }
+            },
+            "required": [
+                "custom_fields",
+                "default_payment_method",
+                "footer",
+                "rendering_options"
+            ]
+        },
+        "livemode": {
+            "type": "boolean"
+        },
+        "metadata": {
+            "type": "object"
+        },
+        "name": {
+            "type": "string"
+        },
+        "next_invoice_sequence": {
+            "type": "integer"
+        },
+        "phone": {
+            "type": "null"
+        },
+        "preferred_locales": {
+            "type": "array",
+            "items": {}
+        },
+        "shipping": {
+            "type": "null"
+        },
+        "tax_exempt": {
+            "type": "string"
+        },
+        "test_clock": {
+            "type": "null"
+        }
+    },
+    "required": [
+        "id",
+        "object",
+        "address",
+        "balance",
+        "created",
+        "currency",
+        "default_source",
+        "delinquent",
+        "description",
+        "discount",
+        "email",
+        "invoice_prefix",
+        "invoice_settings",
+        "livemode",
+        "metadata",
+        "name",
+        "next_invoice_sequence",
+        "phone",
+        "preferred_locales",
+        "shipping",
+        "tax_exempt",
+        "test_clock"
+    ]
+}

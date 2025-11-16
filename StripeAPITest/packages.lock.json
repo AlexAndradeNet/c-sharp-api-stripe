@@ -64,6 +64,15 @@
           "System.Text.Json": "6.0.10"
         }
       },
+      "Newtonsoft.Json.Schema": {
+        "type": "Direct",
+        "requested": "[4.0.1, )",
+        "resolved": "4.0.1",
+        "contentHash": "rbHUKp5WTIbqmLEeJ21nTTDGcfR0LA7bVMzm0bYc3yx6NFKiCIHzzvYbwA4Sqgs7+wNldc5nBlkbithWj8IZig==",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        }
+      },
       "NLog": {
         "type": "Direct",
         "requested": "[6.0.5, )",
